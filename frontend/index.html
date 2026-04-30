@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socratic AI Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a; 
+            --glass-bg: rgba(30, 41, 59, 0.7); 
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary-color: #3b82f6; 
+            --primary-hover: #2563eb;
+            --success-color: #10b981;
+            --text-color: #f8fafc;
+            --muted-text: #94a3b8;
+            --bot-bubble: rgba(59, 130, 246, 0.2);
+            --user-bubble: rgba(255, 255, 255, 0.1);
+            --system-bubble: rgba(16, 185, 129, 0.15);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1e1b4b, var(--bg-color));
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            padding: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--muted-text);
+        }
+
+        /* Upload styling */
+        .upload-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .upload-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        input[type="file"] {
+            display: none;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background-color: var(--glass-border);
+            border-radius: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            line-height: 1.5;
+            animation: slideIn 0.3s ease-out forwards;
+            word-wrap: break-word;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--user-bubble);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: var(--bot-bubble);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.system {
+            align-self: center;
+            background: var(--system-bubble);
+            color: var(--success-color);
+            font-size: 0.85rem;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .send-btn {
+            padding: 0 24px;
+            height: 50px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .send-btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .send-btn:active { transform: translateY(0); }
+
+        .loader {
+            display: none;
+            align-self: flex-start;
+            padding: 16px 20px;
+        }
+        .loader .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .loader .dot:nth-child(1) { animation-delay: -0.32s; }
+        .loader .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="header">
+            <div class="header-title">
+                <h1>Socratic AI Tutor</h1>
+                <p>Vector + Graph RAG</p>
+            </div>
+            <div class="upload-section">
+                <label class="upload-btn" for="doc-upload">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Upload Doc
+                </label>
+                <input type="file" id="doc-upload" accept=".pdf,.txt">
+            </div>
+        </div>
+        
+        <div class="chat-box" id="chat-box">
+            <div class="message bot">
+                I am your Socratic AI guide. I will help you find answers within your documents by asking guiding questions rather than just handing you the facts. Upload a document to begin!
+            </div>
+            <div class="loader" id="loader">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ask a question about the document..." autocomplete="off">
+            <button class="send-btn" id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        let sessionId = localStorage.getItem('socratic_agent_session');
+        if (!sessionId) {
+            sessionId = generateUUID();
+            localStorage.setItem('socratic_agent_session', sessionId);
+        }
+
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const loader = document.getElementById('loader');
+        const docUpload = document.getElementById('doc-upload');
+
+        function appendMessage(text, type) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', type);
+            let formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            msgDiv.innerHTML = formattedText;
+            chatBox.insertBefore(msgDiv, loader);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Upload functionality
+        docUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            appendMessage(`Uploading & processing ${file.name}... This may take a minute for Graph RAG extraction.`, 'system');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    appendMessage(data.message, 'system');
+                } else {
+                    appendMessage(`Upload failed: ${data.detail || 'Unknown error'}`, 'system');
+                }
+            } catch (error) {
+                appendMessage('Error pushing file to backend. Is the server running?', 'system');
+            }
+            // Reset input
+            docUpload.value = '';
+        });
+
+        // Chat functionality
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            appendMessage(message, 'user');
+            userInput.value = '';
+            
+            loader.style.display = 'block';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, session_id: sessionId })
+                });
+
+                const data = await response.json();
+                loader.style.display = 'none';
+                
+                if (response.ok) {
+                    appendMessage(data.response, 'bot');
+                } else {
+                    appendMessage(`Error: ${data.detail}`, 'bot');
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                appendMessage('Connection error. Is the setup running on http://127.0.0.1:8000?', 'bot');
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    </script>
+</body>
+</html>
