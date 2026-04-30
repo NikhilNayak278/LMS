@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+langgraph
+langchain-google-genai
+pydantic
+python-dotenv
+python-multipart
+PyPDF2
+neo4j
+langchain-neo4j
+astrapy
+langchain-astradb
