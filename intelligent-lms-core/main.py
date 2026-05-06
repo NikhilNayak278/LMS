@@ -13,7 +13,18 @@ from core.orchestrator import graph
 from services.telemetry_ml import analyze_student_state, TelemetryData, CognitiveState
 from langchain_core.messages import HumanMessage
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="Intelligent Agentic LMS")
+
+# Add CORS middleware to allow Moodle (or any other domain) to access the API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify the exact Moodle domain instead of "*"
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 async def startup_event():
