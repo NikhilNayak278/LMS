@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Challenge Mode</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        .telemetry-card {
+            background-color: var(--panel-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: #94a3b8;
+            text-decoration: none;
+            align-self: flex-start;
+        }
+        .nav-link:hover { color: white; }
+    </style>
+</head>
+<body>
+    <div style="width: 100%; max-width: 600px;">
+        <a href="/" class="nav-link">← Back to Menu</a>
+        <h1>Autonomous Challenge Mode</h1>
+        
+        <div class="telemetry-card" style="margin-bottom: 1rem;">
+            <button onclick="generateChallenge()" id="genChallengeBtn">Generate Challenge</button>
+            <div id="challengeArea" style="display: none; margin-top: 1.5rem;">
+                <div style="margin-bottom: 1rem; font-size: 0.875rem; color: #94a3b8;">
+                    Concept: <span id="challengeConcept" style="color: white; font-weight: bold;"></span> | 
+                    Difficulty: <span id="challengeDifficulty" style="color: #fbbf24;"></span>
+                </div>
+                <div id="challengeQuestion" style="font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.5;"></div>
+                
+                <textarea id="challengeAnswer" rows="6" style="width: 100%; box-sizing: border-box; background-color: var(--bg-color); border: 1px solid #334155; color: white; padding: 1rem; border-radius: 8px; outline: none; margin-bottom: 1rem; font-family: inherit; font-size: 1rem;" placeholder="Type your answer here..."></textarea>
+                
+                <button onclick="submitAnswer()" id="submitAnswerBtn">Submit Answer</button>
+            </div>
+            
+            <div id="feedbackArea" style="display: none; margin-top: 1.5rem; padding: 1.5rem; border-radius: 8px; background-color: rgba(16, 185, 129, 0.1); border: 1px solid var(--success-color);">
+                <h3 style="margin-top: 0; color: var(--success-color);" id="feedbackTitle">Result</h3>
+                <p style="margin-bottom: 0.5rem;"><strong>Score:</strong> <span id="feedbackScore"></span></p>
+                <p style="margin-bottom: 0.5rem;" id="feedbackText"></p>
+                <p style="margin-bottom: 0; color: #fbbf24; font-style: italic;" id="feedbackHint"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChallengeConcept = "";
+        let currentChallengeQuestion = "";
+
+        async function generateChallenge() {
+            const btn = document.getElementById('genChallengeBtn');
+            btn.disabled = true;
+            btn.textContent = "Loading...";
+            
+            document.getElementById('challengeArea').style.display = 'none';
+            document.getElementById('feedbackArea').style.display = 'none';
+            document.getElementById('challengeAnswer').value = '';
+
+            try {
+                const response = await fetch('/generate-challenge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: "DEV_GHOST_USER" })
+                });
+                
+                const data = await response.json();
+                
+                if (!data) {
+                    alert("No challenges available! You might have mastered everything.");
+                    return;
+                }
+                
+                currentChallengeConcept = data.concept_name;
+                currentChallengeQuestion = data.question_text;
+                
+                document.getElementById('challengeConcept').textContent = data.concept_name;
+                document.getElementById('challengeDifficulty').textContent = data.difficulty;
+                document.getElementById('challengeQuestion').textContent = data.question_text;
+                
+                document.getElementById('challengeArea').style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                alert("Failed to generate challenge.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Generate Challenge";
+            }
+        }
+
+        async function submitAnswer() {
+            const answer = document.getElementById('challengeAnswer').value.trim();
+            if (!answer) return;
+            
+            const btn = document.getElementById('submitAnswerBtn');
+            btn.disabled = true;
+            btn.textContent = "Grading...";
+            
+            try {
+                const response = await fetch('/grade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: "DEV_GHOST_USER",
+                        concept_name: currentChallengeConcept,
+                        question: currentChallengeQuestion,
+                        student_answer: answer
+                    })
+                });
+                
+                const data = await response.json();
+                
+                const feedbackArea = document.getElementById('feedbackArea');
+                const feedbackTitle = document.getElementById('feedbackTitle');
+                
+                document.getElementById('feedbackScore').textContent = data.score;
+                document.getElementById('feedbackText').textContent = data.feedback;
+                
+                if (data.is_passed) {
+                    feedbackArea.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
+                    feedbackArea.style.borderColor = "var(--success-color)";
+                    feedbackTitle.style.color = "var(--success-color)";
+                    feedbackTitle.textContent = "Passed! Mastery Updated.";
+                    document.getElementById('feedbackHint').textContent = "";
+                } else {
+                    feedbackArea.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+                    feedbackArea.style.borderColor = "var(--danger-color)";
+                    feedbackTitle.style.color = "var(--danger-color)";
+                    feedbackTitle.textContent = "Not Quite. Struggling Flag Set.";
+                    document.getElementById('feedbackHint').textContent = "Hint: " + data.socratic_hint;
+                }
+                
+                feedbackArea.style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                alert("Failed to grade answer.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Submit Answer";
+            }
+        }
+    </script>
+</body>
+</html>

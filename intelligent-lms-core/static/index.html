@@ -11,485 +11,57 @@
             --text-color: #f8fafc;
             --accent-color: #3b82f6;
             --accent-hover: #2563eb;
-            --bot-msg-bg: #334155;
-            --user-msg-bg: #2563eb;
-            --danger-color: #ef4444;
-            --success-color: #10b981;
         }
 
         body {
             margin: 0;
-            padding: 0;
+            padding: 2rem;
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
-            height: 100vh;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .sidebar {
-            width: 300px;
+        h1 {
+            margin-bottom: 2rem;
+        }
+
+        .link-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        a {
             background-color: var(--panel-bg);
-            padding: 2rem;
-            border-right: 1px solid #334155;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .main-chat {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 2rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        h1, h2 {
-            margin-top: 0;
-            font-weight: 600;
-        }
-
-        .telemetry-card {
-            background-color: #0f172a;
+            color: var(--accent-color);
             padding: 1.5rem;
             border-radius: 12px;
-            border: 1px solid #334155;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
+            text-decoration: none;
+            font-size: 1.2rem;
             font-weight: 600;
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-            background-color: var(--success-color);
-            color: white;
-            transition: all 0.3s ease;
-        }
-
-        .status-badge.frustrated {
-            background-color: var(--danger-color);
-        }
-
-        .status-badge.idle {
-            background-color: #f59e0b;
-        }
-
-        button {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s;
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
-
-        button:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .chat-box {
-            flex: 1;
-            background-color: var(--panel-bg);
-            border-radius: 16px;
+            text-align: center;
             border: 1px solid #334155;
-            overflow-y: auto;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            transition: all 0.2s;
         }
 
-        .message {
-            max-width: 80%;
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            line-height: 1.5;
-        }
-
-        .message.user {
-            align-self: flex-end;
-            background-color: var(--user-msg-bg);
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.bot {
-            align-self: flex-start;
-            background-color: var(--bot-msg-bg);
-            border-bottom-left-radius: 4px;
-        }
-
-        .input-area {
-            display: flex;
-            gap: 1rem;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            background-color: var(--panel-bg);
-            border: 1px solid #334155;
-            color: var(--text-color);
-            padding: 1rem 1.5rem;
-            border-radius: 999px;
-            outline: none;
-            font-size: 1rem;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--accent-color);
-        }
-
-        .send-btn {
-            width: auto;
-            border-radius: 999px;
-            padding: 1rem 2rem;
-            margin: 0;
-        }
-
-        .missing-nodes {
-            font-size: 0.875rem;
-            color: #fbbf24;
-            margin-top: 0.5rem;
+        a:hover {
+            background-color: #334155;
+            color: var(--accent-hover);
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
-
-    <div class="sidebar">
-        <h2>Live Telemetry</h2>
-        <div class="telemetry-card">
-            <div id="statusBadge" class="status-badge">State: Focused</div>
-            <p>Simulate Student Behavior:</p>
-            <button onclick="simulateTelemetry(150, 5, 6)">Frantic Scrolling (Frustrated)</button>
-            <button onclick="simulateTelemetry(0, 150, 0)">Long Dwell Time (Idle)</button>
-            <button onclick="simulateTelemetry(20, 60, 2)">Normal Reading (Focused)</button>
-        </div>
-        <div class="telemetry-card">
-            <h2>Document Upload</h2>
-            <p style="font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem;">
-                Upload PDFs or TXT files for RAG.
-            </p>
-            <input type="file" id="fileInput" accept=".pdf,.txt" style="margin-bottom: 0.5rem; width: 100%; color: white;">
-            <button onclick="uploadDocument()" id="uploadBtn">Upload Document</button>
-            <p id="uploadStatus" style="font-size: 0.875rem; color: #10b981; margin-top: 0.5rem; display: none;"></p>
-        </div>
-        <div class="telemetry-card">
-            <h2>Tutor Mode</h2>
-            <select id="modeSelect" style="width: 100%; padding: 0.75rem; border-radius: 8px; background: var(--panel-bg); color: white; border: 1px solid #334155; margin-bottom: 0.5rem; outline: none;">
-                <option value="Auto">Auto (Adapts to State)</option>
-                <option value="Socratic">Always Socratic</option>
-                <option value="Normal">Always Direct Answer</option>
-            </select>
-            <p style="font-size: 0.875rem; color: #94a3b8; margin-top: 0.5rem;">
-                Backend logic adjusts the Agent based on this selection.
-            </p>
-        </div>
+    <h1>Intelligent LMS Modules</h1>
+    <div class="link-container">
+        <a href="/chat-ui">Chatbot Interface</a>
+        <a href="/telemetry-ui">Telemetry Interface</a>
+        <a href="/challenge-ui">Autonomous Challenge Mode</a>
     </div>
-
-    <div class="main-chat">
-        <h1>Intelligent Tutor</h1>
-        <div class="chat-box" id="chatBox">
-            <div class="message bot">
-                Hello! I'm your Socratic Tutor. Let's learn about programming! What do you know about variables?
-            </div>
-        </div>
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Type your message here (e.g. 'To summarize, variables...')" onkeypress="handleKeyPress(event)">
-            <button class="send-btn" onclick="sendMessage()">Send</button>
-        </div>
-
-        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #334155;">
-            <h2>Autonomous Challenge Mode</h2>
-            <div class="telemetry-card" style="margin-bottom: 1rem;">
-                <button onclick="generateChallenge()" id="genChallengeBtn">Generate Challenge</button>
-                <div id="challengeArea" style="display: none; margin-top: 1rem;">
-                    <div style="margin-bottom: 0.5rem; font-size: 0.875rem; color: #94a3b8;">
-                        Concept: <span id="challengeConcept" style="color: white; font-weight: bold;"></span> | 
-                        Difficulty: <span id="challengeDifficulty" style="color: #fbbf24;"></span>
-                    </div>
-                    <div id="challengeQuestion" style="font-size: 1.1rem; margin-bottom: 1rem; line-height: 1.5;"></div>
-                    
-                    <textarea id="challengeAnswer" rows="4" style="width: 100%; box-sizing: border-box; background-color: var(--panel-bg); border: 1px solid #334155; color: white; padding: 1rem; border-radius: 8px; outline: none; margin-bottom: 1rem;" placeholder="Type your answer here..."></textarea>
-                    
-                    <button onclick="submitAnswer()" id="submitAnswerBtn">Submit Answer</button>
-                </div>
-                
-                <div id="feedbackArea" style="display: none; margin-top: 1.5rem; padding: 1rem; border-radius: 8px; background-color: rgba(16, 185, 129, 0.1); border: 1px solid var(--success-color);">
-                    <h3 style="margin-top: 0; color: var(--success-color);" id="feedbackTitle">Result</h3>
-                    <p style="margin-bottom: 0.5rem;"><strong>Score:</strong> <span id="feedbackScore"></span></p>
-                    <p style="margin-bottom: 0.5rem;" id="feedbackText"></p>
-                    <p style="margin-bottom: 0; color: #fbbf24; font-style: italic;" id="feedbackHint"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const chatBox = document.getElementById('chatBox');
-        const userInput = document.getElementById('userInput');
-        const statusBadge = document.getElementById('statusBadge');
-        
-        // Telemetry state
-        let currentFrontendState = "Focused";
-        let dwellTimeSeconds = 0;
-        let tabSwitches = 0;
-        let scrollDistance = 0;
-        let lastChatTime = Date.now();
-        let lastScrollPos = window.scrollY || chatBox.scrollTop;
-
-        // Telemetry Trackers
-        setInterval(() => {
-            if (!document.hidden) dwellTimeSeconds++;
-        }, 1000);
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) tabSwitches++;
-        });
-
-        chatBox.addEventListener('scroll', () => {
-            const currentScroll = chatBox.scrollTop;
-            scrollDistance += Math.abs(currentScroll - lastScrollPos);
-            lastScrollPos = currentScroll;
-        });
-
-        function appendMessage(text, sender, missingNodes = []) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}`;
-            msgDiv.textContent = text;
-            
-            if (missingNodes && missingNodes.length > 0) {
-                const missingDiv = document.createElement('div');
-                missingDiv.className = 'missing-nodes';
-                missingDiv.textContent = `[Memory Agent Alert] Missing Concepts: ${missingNodes.join(', ')}`;
-                msgDiv.appendChild(missingDiv);
-            }
-
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text) return;
-            
-            const modeSelect = document.getElementById('modeSelect');
-            const mode = modeSelect ? modeSelect.value : "Auto";
-
-            appendMessage(text, 'user');
-            userInput.value = '';
-
-            const now = Date.now();
-            const timeDiffSecs = Math.max(1, (now - lastChatTime) / 1000);
-            const scrollVelocity = scrollDistance / timeDiffSecs;
-            
-            // Reset for next interval
-            lastChatTime = now;
-            scrollDistance = 0;
-
-            try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message: text, 
-                        mode: mode,
-                        telemetry: {
-                            scroll_velocity: scrollVelocity,
-                            dwell_time: dwellTimeSeconds,
-                            tab_switches: tabSwitches
-                        }
-                    })
-                });
-                
-                const data = await response.json();
-                appendMessage(data.reply, 'bot', data.missing_nodes);
-                updateBadge(data.cognitive_state);
-            } catch (err) {
-                console.error(err);
-                appendMessage('Error connecting to backend.', 'bot');
-            }
-        }
-
-        function handleKeyPress(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        async function simulateTelemetry(velocity, dwell, tabs) {
-            // Manual overrides for testing
-            scrollDistance = velocity * 5; // Fake some scroll distance
-            lastChatTime = Date.now() - 5000; // Fake 5 seconds ago
-            dwellTimeSeconds = dwell;
-            tabSwitches = tabs;
-            
-            try {
-                const response = await fetch('/telemetry', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        scroll_velocity: velocity,
-                        dwell_time: dwell,
-                        tab_switches: tabs
-                    })
-                });
-                const data = await response.json();
-                updateBadge(data.cognitive_state);
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function updateBadge(state) {
-            currentFrontendState = state;
-            statusBadge.textContent = `State: ${state}`;
-            statusBadge.className = 'status-badge';
-            if (state === 'Frustrated') statusBadge.classList.add('frustrated');
-            else if (state === 'Idle') statusBadge.classList.add('idle');
-        }
-
-        async function uploadDocument() {
-            const fileInput = document.getElementById('fileInput');
-            const uploadBtn = document.getElementById('uploadBtn');
-            const uploadStatus = document.getElementById('uploadStatus');
-
-            if (!fileInput.files || fileInput.files.length === 0) {
-                alert('Please select a file to upload.');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            uploadBtn.disabled = true;
-            uploadBtn.textContent = 'Uploading...';
-            uploadStatus.style.display = 'none';
-
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    uploadStatus.textContent = data.message;
-                    uploadStatus.style.display = 'block';
-                    fileInput.value = '';
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Failed to upload document.');
-            } finally {
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = 'Upload Document';
-            }
-        }
-
-        let currentChallengeConcept = "";
-        let currentChallengeQuestion = "";
-
-        async function generateChallenge() {
-            const btn = document.getElementById('genChallengeBtn');
-            btn.disabled = true;
-            btn.textContent = "Loading...";
-            
-            document.getElementById('challengeArea').style.display = 'none';
-            document.getElementById('feedbackArea').style.display = 'none';
-            document.getElementById('challengeAnswer').value = '';
-
-            try {
-                const response = await fetch('/generate-challenge', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: "DEV_GHOST_USER" })
-                });
-                
-                const data = await response.json();
-                
-                if (!data) {
-                    alert("No challenges available! You might have mastered everything.");
-                    return;
-                }
-                
-                currentChallengeConcept = data.concept_name;
-                currentChallengeQuestion = data.question_text;
-                
-                document.getElementById('challengeConcept').textContent = data.concept_name;
-                document.getElementById('challengeDifficulty').textContent = data.difficulty;
-                document.getElementById('challengeQuestion').textContent = data.question_text;
-                
-                document.getElementById('challengeArea').style.display = 'block';
-            } catch (err) {
-                console.error(err);
-                alert("Failed to generate challenge.");
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Generate Challenge";
-            }
-        }
-
-        async function submitAnswer() {
-            const answer = document.getElementById('challengeAnswer').value.trim();
-            if (!answer) return;
-            
-            const btn = document.getElementById('submitAnswerBtn');
-            btn.disabled = true;
-            btn.textContent = "Grading...";
-            
-            try {
-                const response = await fetch('/grade', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: "DEV_GHOST_USER",
-                        concept_name: currentChallengeConcept,
-                        question: currentChallengeQuestion,
-                        student_answer: answer
-                    })
-                });
-                
-                const data = await response.json();
-                
-                const feedbackArea = document.getElementById('feedbackArea');
-                const feedbackTitle = document.getElementById('feedbackTitle');
-                
-                document.getElementById('feedbackScore').textContent = data.score;
-                document.getElementById('feedbackText').textContent = data.feedback;
-                
-                if (data.is_passed) {
-                    feedbackArea.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
-                    feedbackArea.style.borderColor = "var(--success-color)";
-                    feedbackTitle.style.color = "var(--success-color)";
-                    feedbackTitle.textContent = "Passed! Mastery Updated.";
-                    document.getElementById('feedbackHint').textContent = "";
-                } else {
-                    feedbackArea.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
-                    feedbackArea.style.borderColor = "var(--danger-color)";
-                    feedbackTitle.style.color = "var(--danger-color)";
-                    feedbackTitle.textContent = "Not Quite. Struggling Flag Set.";
-                    document.getElementById('feedbackHint').textContent = "Hint: " + data.socratic_hint;
-                }
-                
-                feedbackArea.style.display = 'block';
-            } catch (err) {
-                console.error(err);
-                alert("Failed to grade answer.");
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Submit Answer";
-            }
-        }
-    </script>
 </body>
 </html>

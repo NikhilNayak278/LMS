@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telemetry Interface</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        .telemetry-card {
+            background-color: var(--panel-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            background-color: var(--success-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.frustrated {
+            background-color: var(--danger-color);
+        }
+
+        .status-badge.idle {
+            background-color: #f59e0b;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: #94a3b8;
+            text-decoration: none;
+            align-self: flex-start;
+        }
+        .nav-link:hover { color: white; }
+    </style>
+</head>
+<body>
+    <div style="width: 100%; max-width: 500px;">
+        <a href="/" class="nav-link">← Back to Menu</a>
+        <h1>Live Telemetry Simulation</h1>
+        
+        <div class="telemetry-card">
+            <div id="statusBadge" class="status-badge">State: Focused</div>
+            <p style="margin-bottom: 1.5rem;">Simulate Student Behavior:</p>
+            <button onclick="simulateTelemetry(150, 5, 6)">Frantic Scrolling (Frustrated)</button>
+            <button onclick="simulateTelemetry(0, 150, 0)">Long Dwell Time (Idle)</button>
+            <button onclick="simulateTelemetry(20, 60, 2)">Normal Reading (Focused)</button>
+        </div>
+    </div>
+
+    <script>
+        const statusBadge = document.getElementById('statusBadge');
+        
+        async function simulateTelemetry(velocity, dwell, tabs) {
+            try {
+                const response = await fetch('/telemetry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        scroll_velocity: velocity,
+                        dwell_time: dwell,
+                        tab_switches: tabs
+                    })
+                });
+                const data = await response.json();
+                updateBadge(data.cognitive_state);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function updateBadge(state) {
+            statusBadge.textContent = `State: ${state}`;
+            statusBadge.className = 'status-badge';
+            if (state === 'Frustrated') statusBadge.classList.add('frustrated');
+            else if (state === 'Idle') statusBadge.classList.add('idle');
+        }
+    </script>
+</body>
+</html>

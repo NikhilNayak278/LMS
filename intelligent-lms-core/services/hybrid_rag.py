@@ -115,11 +115,19 @@ def ingest_document(text: str, source_name: str):
                     {"data": concepts_data}
                 )
             
-            relationships_data = [{"source_concept": r.source_concept, "target_concept": r.target_concept, "relationship_type": r.relationship_type} for r in kg.relationships]
-            if relationships_data:
+            prereq_data = [{"source": r.source_concept, "target": r.target_concept} for r in kg.relationships if r.relationship_type.upper() == "PREREQUISITE_OF"]
+            related_data = [{"source": r.source_concept, "target": r.target_concept} for r in kg.relationships if r.relationship_type.upper() != "PREREQUISITE_OF"]
+
+            if prereq_data:
                 graph_db.query(
-                    "UNWIND $data AS item MATCH (s:Concept {name: toLower(item.source_concept)}) MATCH (t:Concept {name: toLower(item.target_concept)}) MERGE (s)-[r:RELATED_TO]->(t) SET r.type = item.relationship_type",
-                    {"data": relationships_data}
+                    "UNWIND $data AS item MERGE (s:Concept {name: toLower(item.source)}) MERGE (t:Concept {name: toLower(item.target)}) MERGE (s)-[:PREREQUISITE_OF]->(t)",
+                    {"data": prereq_data}
+                )
+            
+            if related_data:
+                graph_db.query(
+                    "UNWIND $data AS item MERGE (s:Concept {name: toLower(item.source)}) MERGE (t:Concept {name: toLower(item.target)}) MERGE (s)-[:RELATED_TO]->(t)",
+                    {"data": related_data}
                 )
             
             neo4j_duration = time.time() - start_neo4j

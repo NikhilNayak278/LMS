@@ -127,3 +127,15 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def root():
     return FileResponse("static/index.html")
+
+@app.get("/chat-ui")
+async def chat_ui():
+    return FileResponse("static/chat.html")
+
+@app.get("/telemetry-ui")
+async def telemetry_ui():
+    return FileResponse("static/telemetry.html")
+
+@app.get("/challenge-ui")
+async def challenge_ui():
+    return FileResponse("static/challenge.html")
